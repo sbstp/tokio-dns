@@ -97,7 +97,6 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
-<span id="56">56</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>tokio_core</span>::{<span class='ident'>LoopHandle</span>, <span class='ident'>TcpStream</span>, <span class='ident'>TcpListener</span>, <span class='ident'>UdpSocket</span>};
 <span class='kw'>use</span> <span class='ident'>tokio_core</span>::<span class='ident'>io</span>::<span class='ident'>IoFuture</span>;
@@ -118,10 +117,9 @@
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>R</span><span class='op'>&gt;</span> <span class='ident'>Connector</span><span class='op'>&lt;</span><span class='ident'>R</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>R</span>: <span class='ident'>Clone</span> <span class='op'>+</span> <span class='ident'>Resolver</span> {
     <span class='doccomment'>/// Create a new `Connector`.</span>
     <span class='doccomment'>///</span>
-    <span class='doccomment'>/// The `handle` can be obtained using the `handle()` method of the `Loop` object.</span>
-    <span class='doccomment'>/// The `resolver_threads` parameter is the amount of threads given to the resolver&#39;s</span>
-    <span class='doccomment'>/// thread pool. The `mode` parameter tells the connector how to attempt connection</span>
-    <span class='doccomment'>/// when the resolver yields more than one IP address.</span>
+    <span class='doccomment'>/// The `handle` can be obtained using the `handle()` method of a `Loop` object.</span>
+    <span class='doccomment'>/// The `resolver` parameter is a resolver implementing the `Resolver` trait.</span>
+    <span class='doccomment'>/// It will be used to perform name resolution.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>handle</span>: <span class='ident'>LoopHandle</span>, <span class='ident'>resolver</span>: <span class='ident'>R</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
         <span class='ident'>Connector</span> {
             <span class='ident'>handle</span>: <span class='ident'>handle</span>,
