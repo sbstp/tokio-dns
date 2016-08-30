@@ -14,7 +14,7 @@ git clone $REPO repo
 mkdir docs
 
 cd repo
-if cargo doc ; then
+if cargo doc --no-deps ; then
     cp -R target/doc/* ../docs
     if [ -z $(git branch -a | grep gh-pages) ] ; then
         git checkout --orphan gh-pages
