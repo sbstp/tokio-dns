@@ -17,10 +17,9 @@ pub struct Connector<R> where R: Clone + Resolver {
 impl<R> Connector<R> where R: Clone + Resolver {
     /// Create a new `Connector`.
     ///
-    /// The `handle` can be obtained using the `handle()` method of the `Loop` object.
-    /// The `resolver_threads` parameter is the amount of threads given to the resolver's
-    /// thread pool. The `mode` parameter tells the connector how to attempt connection
-    /// when the resolver yields more than one IP address.
+    /// The `handle` can be obtained using the `handle()` method of a `Loop` object.
+    /// The `resolver` parameter is a resolver implementing the `Resolver` trait.
+    /// It will be used to perform name resolution.
     pub fn new(handle: LoopHandle, resolver: R) -> Self {
         Connector {
             handle: handle,

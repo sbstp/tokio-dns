@@ -10,9 +10,9 @@ use std::str::FromStr;
 pub enum Endpoint<'a> {
     /// Endpoint is a host.
     ///
-    /// The &str is the name and the u16 is the port.
+    /// The `&str` is the name and the `u16` is the port.
     Host(&'a str, u16),
-    /// Endpoint is a SocketAddr.
+    /// Endpoint is a `SocketAddr`.
     SocketAddr(SocketAddr),
 }
 
