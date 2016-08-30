@@ -20,6 +20,8 @@
 //! The `DnsSupport` trait is implemented for it and it will use the resolver
 //! you give it when resolving. Refer to the `examples/connector.rs` file to
 //! see an example of it.
+//!
+//! [Git Repository](https://github.com/sbstp/tokio-dns)
 #![deny(missing_docs)]
 
 extern crate futures;
