@@ -47,7 +47,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-83' class='srclink' href='../src/tokio_dns/src/connector.rs.html#12-15' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-146' class='srclink' href='../src/tokio_dns/src/connector.rs.html#12-15' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Connector&lt;R&gt; <span class='where'>where R: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='../tokio_dns/trait.Resolver.html' title='tokio_dns::Resolver'>Resolver</a></span> {
     // some fields omitted
 }</pre><div class='docblock'><p>A helper for creating connections.</p>
@@ -55,7 +55,7 @@
 <p>This object is a wrapper around a <code>LoopHandle</code> and a resolver.
 It helps initiate connections using endpoints, and offers
 bultin address translation.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;R&gt; <a class='struct' href='../tokio_dns/struct.Connector.html' title='tokio_dns::Connector'>Connector</a>&lt;R&gt; <span class='where'>where R: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='../tokio_dns/trait.Resolver.html' title='tokio_dns::Resolver'>Resolver</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-87' class='srclink' href='../src/tokio_dns/src/connector.rs.html#17-30' title='goto source code'>[src]</a></span></h3>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;R&gt; <a class='struct' href='../tokio_dns/struct.Connector.html' title='tokio_dns::Connector'>Connector</a>&lt;R&gt; <span class='where'>where R: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='../tokio_dns/trait.Resolver.html' title='tokio_dns::Resolver'>Resolver</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-150' class='srclink' href='../src/tokio_dns/src/connector.rs.html#17-30' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(handle: LoopHandle, resolver: R) -&gt; Self</code></h4>
 <div class='docblock'><p>Create a new <code>Connector</code>.</p>
 
@@ -63,11 +63,15 @@ bultin address translation.</p>
 The <code>resolver_threads</code> parameter is the amount of threads given to the resolver&#39;s
 thread pool. The <code>mode</code> parameter tells the connector how to attempt connection
 when the resolver yields more than one IP address.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl&lt;R&gt; <a class='trait' href='../tokio_dns/trait.DnsSupport.html' title='tokio_dns::DnsSupport'>DnsSupport</a> for <a class='struct' href='../tokio_dns/struct.Connector.html' title='tokio_dns::Connector'>Connector</a>&lt;R&gt; <span class='where'>where R: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='../tokio_dns/trait.Resolver.html' title='tokio_dns::Resolver'>Resolver</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-92' class='srclink' href='../src/tokio_dns/src/connector.rs.html#32-44' title='goto source code'>[src]</a></span></h3>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl&lt;R&gt; <a class='trait' href='../tokio_dns/trait.DnsSupport.html' title='tokio_dns::DnsSupport'>DnsSupport</a> for <a class='struct' href='../tokio_dns/struct.Connector.html' title='tokio_dns::Connector'>Connector</a>&lt;R&gt; <span class='where'>where R: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='../tokio_dns/trait.Resolver.html' title='tokio_dns::Resolver'>Resolver</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-155' class='srclink' href='../src/tokio_dns/src/connector.rs.html#32-56' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='method.tcp_connect_par' class='method'><code>fn <a href='../tokio_dns/trait.DnsSupport.html#tymethod.tcp_connect_par' class='fnname'>tcp_connect_par</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpStream&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h4>
 <div class='docblock'><p>Create a new TcpStream connected to the specified endpoint. <a href="../tokio_dns/trait.DnsSupport.html#tymethod.tcp_connect_par">Read more</a></p>
 </div><h4 id='method.tcp_connect_seq' class='method'><code>fn <a href='../tokio_dns/trait.DnsSupport.html#tymethod.tcp_connect_seq' class='fnname'>tcp_connect_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpStream&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h4>
 <div class='docblock'><p>Create a new TcpStream connected to the specified endpoint. <a href="../tokio_dns/trait.DnsSupport.html#tymethod.tcp_connect_seq">Read more</a></p>
+</div><h4 id='method.tcp_listen_seq' class='method'><code>fn <a href='../tokio_dns/trait.DnsSupport.html#tymethod.tcp_listen_seq' class='fnname'>tcp_listen_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpListener&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h4>
+<div class='docblock'><p>Create a new TcpListener bound to the specified endpoint. <a href="../tokio_dns/trait.DnsSupport.html#tymethod.tcp_listen_seq">Read more</a></p>
+</div><h4 id='method.udp_bind_seq' class='method'><code>fn <a href='../tokio_dns/trait.DnsSupport.html#tymethod.udp_bind_seq' class='fnname'>udp_bind_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;UdpSocket&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h4>
+<div class='docblock'><p>Create a new UdpSocket bound to the specified endpoint. <a href="../tokio_dns/trait.DnsSupport.html#tymethod.udp_bind_seq">Read more</a></p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
 

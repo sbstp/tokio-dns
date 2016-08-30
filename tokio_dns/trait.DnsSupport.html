@@ -47,10 +47,12 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-237' class='srclink' href='../src/tokio_dns/src/support.rs.html#12-26' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-310' class='srclink' href='../src/tokio_dns/src/support.rs.html#12-40' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait DnsSupport {
     fn <a href='#tymethod.tcp_connect_par' class='fnname'>tcp_connect_par</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpStream&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span>;
     fn <a href='#tymethod.tcp_connect_seq' class='fnname'>tcp_connect_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpStream&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span>;
+    fn <a href='#tymethod.tcp_listen_seq' class='fnname'>tcp_listen_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpListener&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span>;
+    fn <a href='#tymethod.udp_bind_seq' class='fnname'>udp_bind_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;UdpSocket&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span>;
 }</pre><div class='docblock'><p>An extension trait to add name resolution to objects.</p>
 </div>
             <h2 id='required-methods'>Required Methods</h2>
@@ -60,6 +62,14 @@
 <p>If the endpoint is a hostname, it will be resolved and every
 address returned will be tried in parallel.</p>
 </div><h3 id='tymethod.tcp_connect_seq' class='method stab '><code>fn <a href='#tymethod.tcp_connect_seq' class='fnname'>tcp_connect_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpStream&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h3><div class='docblock'><p>Create a new TcpStream connected to the specified endpoint.</p>
+
+<p>If the endpoint is a hostname, it will be resolved and every
+address returned will be tried one after the other.</p>
+</div><h3 id='tymethod.tcp_listen_seq' class='method stab '><code>fn <a href='#tymethod.tcp_listen_seq' class='fnname'>tcp_listen_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;TcpListener&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h3><div class='docblock'><p>Create a new TcpListener bound to the specified endpoint.</p>
+
+<p>If the endpoint is a hostname, it will be resolved and every
+address returned will be tried one after the other.</p>
+</div><h3 id='tymethod.udp_bind_seq' class='method stab '><code>fn <a href='#tymethod.udp_bind_seq' class='fnname'>udp_bind_seq</a>&lt;'a,&nbsp;T&gt;(&amp;self, ep: T) -&gt; IoFuture&lt;UdpSocket&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></code></h3><div class='docblock'><p>Create a new UdpSocket bound to the specified endpoint.</p>
 
 <p>If the endpoint is a hostname, it will be resolved and every
 address returned will be tried one after the other.</p>
