@@ -1,8 +1,8 @@
-use tokio_core::{LoopHandle, TcpStream};
+use tokio_core::{LoopHandle, TcpStream, TcpListener, UdpSocket};
 use tokio_core::io::IoFuture;
 
 use super::{DnsSupport, Resolver, ToEndpoint};
-use super::common::{tcp_connect_par, tcp_connect_seq};
+use super::common::{tcp_connect_par, tcp_connect_seq, tcp_listen_seq, udp_bind_seq};
 
 /// A helper for creating connections.
 ///
@@ -40,5 +40,17 @@ impl<R> DnsSupport for Connector<R> where R: Clone + Resolver {
         where T: ToEndpoint<'a>
     {
         tcp_connect_seq(self.handle.clone(), self.resolver.clone(), ep)
+    }
+
+    fn tcp_listen_seq<'a, T>(&self, ep: T) -> IoFuture<TcpListener>
+        where T: ToEndpoint<'a>
+    {
+        tcp_listen_seq(self.handle.clone(), self.resolver.clone(), ep)
+    }
+
+    fn udp_bind_seq<'a, T>(&self, ep: T) -> IoFuture<UdpSocket>
+        where T: ToEndpoint<'a>
+    {
+        udp_bind_seq(self.handle.clone(), self.resolver.clone(), ep)
     }
 }
