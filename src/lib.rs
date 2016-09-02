@@ -79,14 +79,11 @@ impl CpuPoolResolver {
 impl Resolver for CpuPoolResolver {
     fn resolve(&self, host: &str) -> IoFuture<Vec<IpAddr>> {
         let host = format!("{}:0", host);
-        self.pool.execute(move || {
+        self.pool.spawn_fn(move || {
             match host[..].to_socket_addrs() {
                 Ok(it) => Ok(it.map(|s| s.ip()).collect()),
                 Err(e) => Err(e),
             }
-        }).then(|res| {
-            // CpuFuture cannot fail unless it panics
-            res.unwrap()
         }).boxed()
     }
 }
