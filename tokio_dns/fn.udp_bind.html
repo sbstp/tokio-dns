@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `Resolver` trait in crate `tokio_dns`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, Resolver">
+    <meta name="description" content="API documentation for the Rust `udp_bind` fn in crate `tokio_dns`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, udp_bind">
 
-    <title>tokio_dns::Resolver - Rust</title>
+    <title>tokio_dns::udp_bind - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
@@ -28,7 +28,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>tokio_dns</a></p><script>window.sidebarCurrent = {name: 'Resolver', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='index.html'>tokio_dns</a></p><script>window.sidebarCurrent = {name: 'udp_bind', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,28 +42,14 @@
         </form>
     </nav>
 
-    <section id='main' class="content trait">
-<h1 class='fqn'><span class='in-band'>Trait <a href='index.html'>tokio_dns</a>::<wbr><a class='trait' href=''>Resolver</a></span><span class='out-of-band'><span id='render-detail'>
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='index.html'>tokio_dns</a>::<wbr><a class='fn' href=''>udp_bind</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-235' class='srclink' href='../src/tokio_dns/src/resolver.rs.html#11-15' title='goto source code'>[src]</a></span></h1>
-<pre class='rust trait'>pub trait Resolver {
-    fn <a href='#tymethod.resolve' class='fnname'>resolve</a>(&amp;self, host: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; BoxFuture&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/std/net/ip/enum.IpAddr.html' title='std::net::ip::IpAddr'>IpAddr</a>&gt;,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html' title='std::io::error::Error'>Error</a>&gt;;
-}</pre><div class='docblock'><p>The Resolver trait represents an object capable of
-resolving host names into IP addresses.</p>
-</div>
-            <h2 id='required-methods'>Required Methods</h2>
-            <div class='methods'>
-        <h3 id='tymethod.resolve' class='method stab '><code>fn <a href='#tymethod.resolve' class='fnname'>resolve</a>(&amp;self, host: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; BoxFuture&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/std/net/ip/enum.IpAddr.html' title='std::net::ip::IpAddr'>IpAddr</a>&gt;,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html' title='std::io::error::Error'>Error</a>&gt;</code></h3><div class='docblock'><p>Given a host name, this function returns a Future which
-will eventually resolve into a list of IP addresses.</p>
-</div></div>
-        <h2 id='implementors'>Implementors</h2>
-        <ul class='item-list' id='implementors-list'>
-    <li><code>impl Resolver for <a class='struct' href='../tokio_dns/struct.CpuPoolResolver.html' title='tokio_dns::CpuPoolResolver'>CpuPoolResolver</a></code></li>
-</ul><script type="text/javascript" async
-                         src="../implementors/tokio_dns/trait.Resolver.js">
-                 </script></section>
+               </span><a id='src-182' class='srclink' href='../src/tokio_dns/src/net.rs.html#83-87' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn udp_bind&lt;'a,&nbsp;T&gt;(ep: T, handle: &amp;Handle) -&gt; IoFuture&lt;UdpSocket&gt; <span class='where'>where T: <a class='trait' href='../tokio_dns/trait.ToEndpoint.html' title='tokio_dns::ToEndpoint'>ToEndpoint</a>&lt;'a&gt;</span></pre><div class='docblock'><p>Bind to the endpoint using the default resolver.</p>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

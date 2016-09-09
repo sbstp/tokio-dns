@@ -47,40 +47,27 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-0' class='srclink' href='../src/tokio_dns/src/lib.rs.html#1-92' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-0' class='srclink' href='../src/tokio_dns/src/lib.rs.html#1-36' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>This crate offers tools for asynchronous name resolution, and extensions to
-the <code>tokio_core</code> crate.</p>
+ the <code>tokio_core</code> crate.</p>
 
 <p>First, <code>Endpoint</code> and <code>ToEndpoint</code> behave very much like <code>SocketAddr</code> and
-<code>ToSocketAddrs</code> from the standard library. The main difference is that the
-<code>ToEndpoint</code> trait does not perform any name resolution. If simply detect
-whether the given endpoint is a socket address or a host name. Then, it
-is up to a resolver to perform name resolution.</p>
+ <code>ToSocketAddrs</code> from the standard library. The main difference is that the
+ <code>ToEndpoint</code> trait does not perform any name resolution. If simply detect
+ whether the given endpoint is a socket address or a host name. Then, it
+ is up to a resolver to perform name resolution.</p>
 
 <p>The <code>Resolver</code> trait describes an abstract, asynchronous resolver. This crate
-provides one (for now) implementation of a resolver, the <code>CpuPoolResolver</code>.
-It uses a thread pool and the <code>ToSocketAddrs</code> trait to perform name resolution.</p>
+ provides one (for now) implementation of a resolver, the <code>CpuPoolResolver</code>.
+ It uses a thread pool and the <code>ToSocketAddrs</code> trait to perform name resolution.</p>
 
-<p>The <code>DnsSupport</code> trait is an extension trait that adds name resolution to an
-object. There&#39;s an implementation for <code>LoopHandle</code> that uses a <code>lazy_static!</code>
-<code>CpuPoolResolver</code> of 5 threads. This is the easiest way of using this crate.
-Refer to the <code>examples/support.rs</code> file to see an example of it in use.</p>
-
-<p>This crate also offers a <code>Connector</code> struct, that is more customizable.
-The <code>DnsSupport</code> trait is implemented for it and it will use the resolver
-you give it when resolving. Refer to the <code>examples/connector.rs</code> file to
-see an example of it.</p>
+<p>The crate level functions <code>tcp_connect</code>, <code>tcp_listen</code> and <code>udp_bind</code> support
+ name resolution via a lazy static <code>CpuPoolResolver</code> using 5 threads. Their
+<code>*_with</code> counterpart take a resolver as an argument.</p>
 
 <p><a href="https://github.com/sbstp/tokio-dns">Git Repository</a></p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
-                       <tr class=' module-item'>
-                           <td><a class='struct' href='struct.Connector.html'
-                                  title='tokio_dns::Connector'>Connector</a></td>
-                           <td class='docblock short'>
-                                <p>A helper for creating connections.</p>
-                           </td>
-                       </tr>
                        <tr class=' module-item'>
                            <td><a class='struct' href='struct.CpuPoolResolver.html'
                                   title='tokio_dns::CpuPoolResolver'>CpuPoolResolver</a></td>
@@ -98,13 +85,6 @@ see an example of it.</p>
                        </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
 <table>
                        <tr class=' module-item'>
-                           <td><a class='trait' href='trait.DnsSupport.html'
-                                  title='tokio_dns::DnsSupport'>DnsSupport</a></td>
-                           <td class='docblock short'>
-                                <p>An extension trait to add name resolution to objects.</p>
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
                            <td><a class='trait' href='trait.Resolver.html'
                                   title='tokio_dns::Resolver'>Resolver</a></td>
                            <td class='docblock short'>
@@ -117,6 +97,49 @@ resolving host names into IP addresses.</p>
                                   title='tokio_dns::ToEndpoint'>ToEndpoint</a></td>
                            <td class='docblock short'>
                                 <p>A trait for objects that can be converted into an Endpoint.</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.tcp_bind.html'
+                                  title='tokio_dns::tcp_bind'>tcp_bind</a></td>
+                           <td class='docblock short'>
+                                <p>Bind to the endpoint using the default resolver.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.tcp_bind_with.html'
+                                  title='tokio_dns::tcp_bind_with'>tcp_bind_with</a></td>
+                           <td class='docblock short'>
+                                <p>Bind to the endpoint using a custom resolver.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.tcp_connect.html'
+                                  title='tokio_dns::tcp_connect'>tcp_connect</a></td>
+                           <td class='docblock short'>
+                                <p>Connect to the endpoint using the default resolver.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.tcp_connect_with.html'
+                                  title='tokio_dns::tcp_connect_with'>tcp_connect_with</a></td>
+                           <td class='docblock short'>
+                                <p>Connect to the endpoint using a custom resolver.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.udp_bind.html'
+                                  title='tokio_dns::udp_bind'>udp_bind</a></td>
+                           <td class='docblock short'>
+                                <p>Bind to the endpoint using the default resolver.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.udp_bind_with.html'
+                                  title='tokio_dns::udp_bind_with'>udp_bind_with</a></td>
+                           <td class='docblock short'>
+                                <p>Bind to the endpoint using a custom resolver.</p>
                            </td>
                        </tr></table></section>
     <section id='search' class="content hidden"></section>
