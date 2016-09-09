@@ -3,17 +3,17 @@ extern crate tokio_core;
 extern crate tokio_dns;
 
 use futures::Future;
-use tokio_core::Loop;
-use tokio_dns::DnsSupport;
+use tokio_core::reactor::Core;
+use tokio_dns::tcp_connect;
 
 fn main() {
-    let mut lp = Loop::new().unwrap();
+    let mut lp = Core::new().unwrap();
 
     // connect using the built-in resolver.
-    let co = lp.handle().tcp_connect_seq("rust-lang.org:80").and_then(|sock| {
+    let conn = tcp_connect("rust-lang.org:80", &lp.handle()).and_then(|sock| {
         println!("conncted to {}", sock.peer_addr().unwrap());
         Ok(())
     });
 
-    lp.run(co).unwrap();
+    lp.run(conn).unwrap();
 }
