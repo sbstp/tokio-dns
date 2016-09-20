@@ -11,7 +11,7 @@ fn main() {
 
     // connect using the built-in resolver.
     let conn = tcp_connect("rust-lang.org:80", &lp.handle()).and_then(|sock| {
-        println!("conncted to {}", sock.peer_addr().unwrap());
+        println!("connected to {}", sock.peer_addr().unwrap());
         Ok(())
     });
 
