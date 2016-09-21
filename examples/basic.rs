@@ -10,7 +10,7 @@ fn main() {
     let mut lp = Core::new().unwrap();
 
     // connect using the built-in resolver.
-    let conn = tcp_connect("rust-lang.org:80", &lp.handle()).and_then(|sock| {
+    let conn = tcp_connect("rust-lang.org:80", &lp.remote()).and_then(|sock| {
         println!("connected to {}", sock.peer_addr().unwrap());
         Ok(())
     });

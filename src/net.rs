@@ -1,9 +1,11 @@
 use std::io;
-use std::net::{IpAddr, SocketAddr};
+use std::net::SocketAddr;
 
-use futures::{self, Future};
+use futures::{self, Future, IntoFuture};
+use futures::stream::Stream;
+use tokio_core::io::IoFuture;
 use tokio_core::net::{TcpListener, TcpStream, UdpSocket};
-use tokio_core::reactor::Handle;
+use tokio_core::reactor::{Handle, Remote};
 
 use super::resolver::{CpuPoolResolver, Resolver};
 use super::{Endpoint, ToEndpoint};
@@ -12,124 +14,118 @@ lazy_static! {
     static ref POOL: CpuPoolResolver = CpuPoolResolver::new(5);
 }
 
-pub type IoFuture<I> = Box<Future<Item=I, Error=io::Error>>;
-
 /// Connect to the endpoint using the default resolver.
-pub fn tcp_connect<'a, T>(ep: T, handle: &Handle) -> IoFuture<TcpStream>
+pub fn tcp_connect<'a, T>(ep: T, handle: &Remote) -> IoFuture<TcpStream>
     where T: ToEndpoint<'a>
 {
     tcp_connect_with(ep, handle, POOL.clone())
 }
 
 /// Connect to the endpoint using a custom resolver.
-pub fn tcp_connect_with<'a, T, R>(ep: T, handle: &Handle, resolver: R) -> IoFuture<TcpStream>
+pub fn tcp_connect_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<TcpStream>
     where T: ToEndpoint<'a>, R: Resolver
 {
-    if_host_resolve(handle, ep, resolver, |handle, port, ip_addrs| {
-        let mut prev: Option<IoFuture<TcpStream>> = None;
-
-        // This loop chains futures one after another so they each try
-        // to connect to an address in a sequential way.
-        for ip_addr in ip_addrs {
-            let addr = SocketAddr::new(ip_addr, port);
-            let handle = handle.clone();
-
-            prev = Some(match prev.take() {
-                None => Box::new(TcpStream::connect(&addr, &handle)),
-                Some(prev) => Box::new(prev.or_else(move |_| {
-                    let addr = addr.clone();
-                    Box::new(TcpStream::connect(&addr, &handle))
-                })),
-            });
-        }
-
-        // If this Option is None, it means that there were no addresses in the list.
-        match prev.take() {
-            Some(fut) => fut,
-            None => Box::new(futures::failed(io::Error::new(io::ErrorKind::Other, "resolve returned no addresses"))),
-        }
-    }, |handle, addr| Box::new(TcpStream::connect(addr, &handle)))
+    let remote = remote.clone();
+    resolve_endpoint(ep, resolver).and_then(move |addrs| {
+        try_until_ok(addrs, move |addr| {
+            with_handle(&remote, move |handle| TcpStream::connect(&addr, handle))
+        })
+    }).boxed()
 }
 
 /// Bind to the endpoint using the default resolver.
-pub fn tcp_bind<'a, T>(ep: T, handle: &Handle) -> IoFuture<TcpListener>
+pub fn tcp_bind<'a, T>(ep: T, remote: &Remote) -> IoFuture<TcpListener>
     where T: ToEndpoint<'a>
 {
-    tcp_bind_with(ep, handle, POOL.clone())
+    tcp_bind_with(ep, remote, POOL.clone())
 }
 
 /// Bind to the endpoint using a custom resolver.
-pub fn tcp_bind_with<'a, T, R>(ep: T, handle: &Handle, resolver: R) -> IoFuture<TcpListener>
+pub fn tcp_bind_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<TcpListener>
     where T: ToEndpoint<'a>, R: Resolver
 {
-    if_host_resolve(handle, ep, resolver, |handle, port, ip_addrs| {
-        let mut last_err = None;
-
-        for ip_addr in ip_addrs {
-            let addr = SocketAddr::new(ip_addr, port);
-            match TcpListener::bind(&addr, &handle) {
-                Ok(sock) => return Box::new(futures::finished(sock)),
-                Err(err) => last_err = Some(err),
-            }
-        }
-
-        Box::new(futures::failed(last_err.unwrap_or_else(|| {
-            io::Error::new(io::ErrorKind::InvalidInput, "could not resolve to any address")
-        })))
-    }, |handle, addr| Box::new(futures::done(TcpListener::bind(&addr, &handle))))
+    let remote = remote.clone();
+    resolve_endpoint(ep, resolver).and_then(move |addrs| {
+        try_until_ok(addrs, move |addr| {
+            with_handle(&remote, move |handle| TcpListener::bind(&addr, handle))
+        })
+    }).boxed()
 }
 
 /// Bind to the endpoint using the default resolver.
-pub fn udp_bind<'a, T>(ep: T, handle: &Handle) -> IoFuture<UdpSocket>
+pub fn udp_bind<'a, T>(ep: T, remote: &Remote) -> IoFuture<UdpSocket>
     where T: ToEndpoint<'a>
 {
-    udp_bind_with(ep, handle, POOL.clone())
+    udp_bind_with(ep, remote, POOL.clone())
 }
 
 /// Bind to the endpoint using a custom resolver.
-pub fn udp_bind_with<'a, T, R>(ep: T, handle: &Handle, resolver: R) -> IoFuture<UdpSocket>
+pub fn udp_bind_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<UdpSocket>
     where T: ToEndpoint<'a>, R: Resolver
 {
-    if_host_resolve(handle, ep, resolver, |handle, port, ip_addrs| {
-        let mut last_err = None;
-
-        for ip_addr in ip_addrs {
-            let addr = SocketAddr::new(ip_addr, port);
-            match UdpSocket::bind(&addr, &handle) {
-                Ok(sock) => return Box::new(futures::finished(sock)),
-                Err(err) => last_err = Some(err),
-            }
-        }
-
-        Box::new(futures::failed(last_err.unwrap_or_else(|| {
-            io::Error::new(io::ErrorKind::InvalidInput, "could not resolve to any address")
-        })))
-    }, |handle, addr| Box::new(futures::done(UdpSocket::bind(&addr, &handle))))
+    let remote = remote.clone();
+    resolve_endpoint(ep, resolver).and_then(move |addrs| {
+        try_until_ok(addrs, move |addr| {
+            with_handle(&remote, move |handle| UdpSocket::bind(&addr, handle))
+        })
+    }).boxed()
 }
 
-
-// abstraction of the code that is common to all the functions
-fn if_host_resolve<'a, T, R, F, E, S>(handle: &Handle, ep: T, resolver: R, func: F, elsef: E) -> IoFuture<S>
-        where R: Resolver,
-              T: ToEndpoint<'a>,
-              F: FnOnce(Handle, u16, Vec<IpAddr>) -> IoFuture<S> + 'static,
-              E: FnOnce(Handle, &SocketAddr) -> IoFuture<S>,
-              S: 'static,
+/// Resolves endpoint into a vector of socket addresses.
+fn resolve_endpoint<'a, T, R>(ep: T, resolver: R) -> IoFuture<Vec<SocketAddr>>
+    where R: Resolver,
+          T: ToEndpoint<'a>
 {
     let ep = match ep.to_endpoint() {
         Ok(ep) => ep,
-        Err(e) => return Box::new(futures::failed(e)),
+        Err(e) => return futures::failed(e).boxed()
     };
-
     match ep {
         Endpoint::Host(host, port) => {
-            let handle = handle.clone();
-            Box::new(resolver.resolve(host).and_then(move |addrs| {
-                func(handle, port, addrs)
-            }))
+            resolver.resolve(host).map(move |addrs| {
+                addrs.into_iter().map(|addr| SocketAddr::new(addr, port)).collect()
+            }).boxed()
         }
-        Endpoint::SocketAddr(ref addr) => {
-            elsef(handle.clone(), addr)
+        Endpoint::SocketAddr(addr) => {
+            futures::finished(vec![addr]).boxed()
         }
     }
+}
+
+fn try_until_ok<F, R, I>(addrs: Vec<SocketAddr>, f: F) -> IoFuture<I>
+    where F: Fn(SocketAddr) -> R + Send + 'static,
+          R: IntoFuture<Item=I, Error=io::Error> + Send + 'static,
+          R::Future: Send + 'static,
+          <R::Future as Future>::Error: From<io::Error>,
+          I: Send + 'static
+{
+    let result = Err(io::Error::new(io::ErrorKind::Other, "could not resolve to any address"));
+    futures::stream::iter(addrs.into_iter().map(Ok)).fold(result, move |prev, addr| {
+        match prev {
+            Ok(i) => {
+                // Keep first successful result.
+                futures::finished(Ok(i)).boxed()
+            }
+            Err(..) => {
+                // Ignore previous error and try next address.
+                let future = f(addr).into_future();
+                // Lift future error into item to avoid short-circuit exit from fold.
+                future.then(Ok).boxed()
+            }
+        }
+    }).and_then(|r| r).boxed()
+}
+
+/// Invokes functor with event loop handle obtained from a remote.
+fn with_handle<F, R, I>(remote: &Remote, f: F) -> IoFuture<I>
+    where F: FnOnce(&Handle) -> R + Send + 'static,
+          R: IntoFuture<Item=I, Error=io::Error> + Send + 'static,
+          R::Future: Send + 'static
+{
+    let (tx, rx) = futures::oneshot();
+    remote.spawn(move |handle| {
+        tx.complete(f(handle));
+        Ok(())
+    });
+    rx.then(|r| r.expect("canceled")).boxed()
 }
