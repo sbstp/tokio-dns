@@ -15,17 +15,16 @@ lazy_static! {
 }
 
 /// Connect to the endpoint using the default resolver.
-pub fn tcp_connect<'a, T>(ep: T, handle: &Remote) -> IoFuture<TcpStream>
+pub fn tcp_connect<'a, T>(ep: T, handle: Remote) -> IoFuture<TcpStream>
     where T: ToEndpoint<'a>
 {
     tcp_connect_with(ep, handle, POOL.clone())
 }
 
 /// Connect to the endpoint using a custom resolver.
-pub fn tcp_connect_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<TcpStream>
+pub fn tcp_connect_with<'a, T, R>(ep: T, remote: Remote, resolver: R) -> IoFuture<TcpStream>
     where T: ToEndpoint<'a>, R: Resolver
 {
-    let remote = remote.clone();
     resolve_endpoint(ep, resolver).and_then(move |addrs| {
         try_until_ok(addrs, move |addr| {
             with_handle(&remote, move |handle| TcpStream::connect(&addr, handle))
@@ -34,17 +33,16 @@ pub fn tcp_connect_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFutu
 }
 
 /// Bind to the endpoint using the default resolver.
-pub fn tcp_bind<'a, T>(ep: T, remote: &Remote) -> IoFuture<TcpListener>
+pub fn tcp_bind<'a, T>(ep: T, remote: Remote) -> IoFuture<TcpListener>
     where T: ToEndpoint<'a>
 {
     tcp_bind_with(ep, remote, POOL.clone())
 }
 
 /// Bind to the endpoint using a custom resolver.
-pub fn tcp_bind_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<TcpListener>
+pub fn tcp_bind_with<'a, T, R>(ep: T, remote: Remote, resolver: R) -> IoFuture<TcpListener>
     where T: ToEndpoint<'a>, R: Resolver
 {
-    let remote = remote.clone();
     resolve_endpoint(ep, resolver).and_then(move |addrs| {
         try_until_ok(addrs, move |addr| {
             with_handle(&remote, move |handle| TcpListener::bind(&addr, handle))
@@ -53,17 +51,16 @@ pub fn tcp_bind_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<
 }
 
 /// Bind to the endpoint using the default resolver.
-pub fn udp_bind<'a, T>(ep: T, remote: &Remote) -> IoFuture<UdpSocket>
+pub fn udp_bind<'a, T>(ep: T, remote: Remote) -> IoFuture<UdpSocket>
     where T: ToEndpoint<'a>
 {
     udp_bind_with(ep, remote, POOL.clone())
 }
 
 /// Bind to the endpoint using a custom resolver.
-pub fn udp_bind_with<'a, T, R>(ep: T, remote: &Remote, resolver: R) -> IoFuture<UdpSocket>
+pub fn udp_bind_with<'a, T, R>(ep: T, remote: Remote, resolver: R) -> IoFuture<UdpSocket>
     where T: ToEndpoint<'a>, R: Resolver
 {
-    let remote = remote.clone();
     resolve_endpoint(ep, resolver).and_then(move |addrs| {
         try_until_ok(addrs, move |addr| {
             with_handle(&remote, move |handle| UdpSocket::bind(&addr, handle))

@@ -11,7 +11,7 @@ fn main() {
     let mut lp = Core::new().unwrap();
 
     // connect using the built-in resolver.
-    let serv = tcp_bind("localhost:3000", &lp.remote()).and_then(|listener| {
+    let serv = tcp_bind("localhost:3000", lp.remote()).and_then(|listener| {
         println!("ready to accept");
         listener.incoming().for_each(|(_, addr)| {
             println!("accepted connection from {:?}", addr);
