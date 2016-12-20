@@ -5,7 +5,7 @@ Asynchronous name resolution utilities for the `futures` and `tokio-core` crates
 
 [Documentation](https://docs.rs/tokio-dns-unofficial)
 
-The package's name is `tokio-dns-unofficial`, but the crate's name is `tokio-dns`.
+This library [has been packaged to crates.io](https://crates.io/crates/tokio-dns-unofficial). Note that its name on crates.io is `tokio-dns-unofficial`, but the crate's name is `tokio-dns` (when using `extern crate ...`).
 
 ## Demo
 ```rust
