@@ -3,7 +3,9 @@ Asynchronous name resolution utilities for the `futures` and `tokio-core` crates
 
 [![BuildStatus](https://api.travis-ci.org/sbstp/tokio-dns.svg?branch=master)](https://travis-ci.org/sbstp/tokio-dns)
 
-[Documentation](https://sbstp.github.io/tokio-dns/tokio_dns/index.html)
+[Documentation](https://docs.rs/tokio-dns-unofficial)
+
+The package's name is `tokio-dns-unofficial`, but the crate's name is `tokio-dns`.
 
 ## Demo
 ```rust

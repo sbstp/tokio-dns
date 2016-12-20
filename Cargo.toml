@@ -1,7 +1,19 @@
 [package]
-name = "tokio-dns"
+name = "tokio-dns-unofficial"
 version = "0.1.0"
 authors = ["Simon Bernier St-Pierre <sbernierstpierre@gmail.com>"]
+description = "Unofficial extension to tokio-core to provide asynchronous DNS resolution"
+documentation = "https://docs.rs/tokio-dns-unofficial"
+homepage = "https://github.com/sbstp/tokio-dns"
+repository = "https://github.com/sbstp/tokio-dns"
+readme = "README.md"
+keywords = ["tokio", "async", "dns"]
+license = "Apache-2.0/MIT"
+exclude = ["docs.sh", ".travis.yml"]
+
+[lib]
+name = "tokio_dns"
+path = "src/lib.rs"
 
 [dependencies]
 futures = "0.1"
