@@ -24,8 +24,6 @@ extern crate tokio_core;
 
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate log;
 
 mod endpoint;
 mod net;

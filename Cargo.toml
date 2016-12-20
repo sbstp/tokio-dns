@@ -1,6 +1,6 @@
 [package]
 name = "tokio-dns-unofficial"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Simon Bernier St-Pierre <sbernierstpierre@gmail.com>"]
 description = "Unofficial extension to tokio-core to provide asynchronous DNS resolution"
 documentation = "https://docs.rs/tokio-dns-unofficial"
@@ -20,4 +20,3 @@ futures = "0.1"
 futures-cpupool = "0.1"
 lazy_static = "0.2"
 tokio-core = "0.1"
-log = "0.3"
