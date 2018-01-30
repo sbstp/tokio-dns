@@ -21,6 +21,7 @@
 extern crate futures;
 extern crate futures_cpupool;
 extern crate tokio_core;
+extern crate tokio_io;
 
 #[macro_use]
 extern crate lazy_static;
@@ -29,6 +30,15 @@ mod endpoint;
 mod net;
 mod resolver;
 
+use futures::future::Future;
+
+fn boxed<F>(fut: F) -> Box<Future<Item = F::Item, Error = F::Error> + Send>
+where
+    F: Future + Send + 'static,
+{
+    Box::new(fut)
+}
+
 pub use endpoint::{Endpoint, ToEndpoint};
-pub use net::{tcp_connect, tcp_connect_with, tcp_bind, tcp_bind_with, udp_bind, udp_bind_with};
+pub use net::{tcp_bind, tcp_bind_with, tcp_connect, tcp_connect_with, udp_bind, udp_bind_with};
 pub use resolver::{CpuPoolResolver, Resolver};

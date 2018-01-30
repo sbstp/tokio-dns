@@ -1,17 +1,16 @@
-use std::io;
 use std::net::{IpAddr, ToSocketAddrs};
 use std::str;
 
-use futures::{Future, BoxFuture};
 use futures_cpupool::CpuPool;
-use tokio_core::io::IoFuture;
+use tokio_io::IoFuture;
+use boxed;
 
 /// The Resolver trait represents an object capable of
 /// resolving host names into IP addresses.
 pub trait Resolver {
     /// Given a host name, this function returns a Future which
     /// will eventually resolve into a list of IP addresses.
-    fn resolve(&self, host: &str) -> BoxFuture<Vec<IpAddr>, io::Error>;
+    fn resolve(&self, host: &str) -> IoFuture<Vec<IpAddr>>;
 }
 
 /// A resolver based on a thread pool.
@@ -35,11 +34,12 @@ impl CpuPoolResolver {
 impl Resolver for CpuPoolResolver {
     fn resolve(&self, host: &str) -> IoFuture<Vec<IpAddr>> {
         let host = format!("{}:0", host);
-        self.pool.spawn_fn(move || {
-            match host[..].to_socket_addrs() {
-                Ok(it) => Ok(it.map(|s| s.ip()).collect()),
-                Err(e) => Err(e),
-            }
-        }).boxed()
+        boxed(
+            self.pool
+                .spawn_fn(move || match host[..].to_socket_addrs() {
+                    Ok(it) => Ok(it.map(|s| s.ip()).collect()),
+                    Err(e) => Err(e),
+                }),
+        )
     }
 }
