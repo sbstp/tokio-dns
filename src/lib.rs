@@ -18,9 +18,13 @@
 //! [Git Repository](https://github.com/sbstp/tokio-dns)
 #![deny(missing_docs)]
 
+extern crate rand;
+extern crate bytes;
 extern crate futures;
 extern crate futures_cpupool;
 extern crate tokio_core;
+extern crate resolv_conf;
+extern crate dns_parser;
 
 #[macro_use]
 extern crate lazy_static;
@@ -28,7 +32,9 @@ extern crate lazy_static;
 mod endpoint;
 mod net;
 mod resolver;
+mod async;
 
 pub use endpoint::{Endpoint, ToEndpoint};
 pub use net::{tcp_connect, tcp_connect_with, tcp_bind, tcp_bind_with, udp_bind, udp_bind_with};
 pub use resolver::{CpuPoolResolver, Resolver};
+pub use async::AsyncResolver;
