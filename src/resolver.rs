@@ -2,8 +2,8 @@ use std::net::{IpAddr, ToSocketAddrs};
 use std::str;
 
 use futures_cpupool::CpuPool;
-use tokio_io::IoFuture;
-use boxed;
+
+use {boxed, IoFuture};
 
 /// The Resolver trait represents an object capable of
 /// resolving host names into IP addresses.

@@ -16,12 +16,11 @@
 //!`*_with` counterpart take a resolver as an argument.
 //!
 //! [Git Repository](https://github.com/sbstp/tokio-dns)
-#![deny(missing_docs)]
+#![warn(missing_docs)]
 
 extern crate futures;
 extern crate futures_cpupool;
-extern crate tokio_core;
-extern crate tokio_io;
+extern crate tokio;
 
 #[macro_use]
 extern crate lazy_static;
@@ -30,7 +29,12 @@ mod endpoint;
 mod net;
 mod resolver;
 
+use std::io;
+
 use futures::future::Future;
+
+/// An alias for the futures produced by this library.
+pub type IoFuture<T> = Box<Future<Item = T, Error = io::Error> + Send>;
 
 fn boxed<F>(fut: F) -> Box<Future<Item = F::Item, Error = F::Error> + Send>
 where
@@ -40,5 +44,5 @@ where
 }
 
 pub use endpoint::{Endpoint, ToEndpoint};
-pub use net::{tcp_bind, tcp_bind_with, tcp_connect, tcp_connect_with, udp_bind, udp_bind_with};
+pub use net::{resolve, TcpListener, TcpStream, UdpSocket};
 pub use resolver::{CpuPoolResolver, Resolver};

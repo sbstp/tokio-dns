@@ -1,23 +1,22 @@
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 extern crate tokio_dns;
 
 use futures::Future;
 use futures::stream::Stream;
-use tokio_core::reactor::Core;
-use tokio_dns::tcp_bind;
+use tokio_dns::TcpListener;
 
 fn main() {
-    let mut lp = Core::new().unwrap();
-
     // connect using the built-in resolver.
-    let serv = tcp_bind("localhost:3000", lp.remote()).and_then(|listener| {
-        println!("ready to accept");
-        listener.incoming().for_each(|(_, addr)| {
-            println!("accepted connection from {:?}", addr);
-            Ok(())
+    let server = TcpListener::bind("localhost:3000")
+        .and_then(|listener| {
+            println!("Ready to accept");
+            listener.incoming().for_each(|sock| {
+                println!("Accepted connection from {:?}", sock.peer_addr().unwrap());
+                Ok(())
+            })
         })
-    });
+        .then(|_| Ok(()));
 
-    lp.run(serv).unwrap();
+    tokio::run(server);
 }

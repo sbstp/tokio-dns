@@ -1,81 +1,104 @@
 use std::io;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 
-use futures::{self, Future, IntoFuture};
 use futures::stream::Stream;
-use tokio_core::net::{TcpListener, TcpStream, UdpSocket};
-use tokio_core::reactor::{Handle, Remote};
-use tokio_io::IoFuture;
+use futures::{self, Future, IntoFuture};
+use tokio::net;
 
-use super::resolver::{CpuPoolResolver, Resolver};
-use super::{Endpoint, ToEndpoint};
-use boxed;
+use endpoint::{Endpoint, ToEndpoint};
+use resolver::{CpuPoolResolver, Resolver};
+use {boxed, IoFuture};
 
 lazy_static! {
     static ref POOL: CpuPoolResolver = CpuPoolResolver::new(5);
 }
 
-/// Connect to the endpoint using the default resolver.
-pub fn tcp_connect<'a, T>(ep: T, handle: Remote) -> IoFuture<TcpStream>
+/// Resolve a host using the default resolver.
+pub fn resolve<'a, T>(host: &str) -> IoFuture<Vec<IpAddr>>
 where
     T: ToEndpoint<'a>,
 {
-    tcp_connect_with(ep, handle, POOL.clone())
+    POOL.resolve(host)
 }
 
-/// Connect to the endpoint using a custom resolver.
-pub fn tcp_connect_with<'a, T, R>(ep: T, remote: Remote, resolver: R) -> IoFuture<TcpStream>
-where
-    T: ToEndpoint<'a>,
-    R: Resolver,
-{
-    boxed(resolve_endpoint(ep, resolver).and_then(move |addrs| {
-        try_until_ok(addrs, move |addr| {
-            with_handle(&remote, move |handle| TcpStream::connect(&addr, handle))
-        })
-    }))
+/// Shim for tokio::net::TcpStream
+pub struct TcpStream;
+
+impl TcpStream {
+    /// Connect to the endpoint using the default resolver.
+    pub fn connect<'a, T>(ep: T) -> IoFuture<net::TcpStream>
+    where
+        T: ToEndpoint<'a>,
+    {
+        TcpStream::connect_with(ep, POOL.clone())
+    }
+
+    /// Connect to the endpoint using a custom resolver.
+    pub fn connect_with<'a, T, R>(ep: T, resolver: R) -> IoFuture<net::TcpStream>
+    where
+        T: ToEndpoint<'a>,
+        R: Resolver,
+    {
+        boxed(
+            resolve_endpoint(ep, resolver).and_then(move |addrs| {
+                try_until_ok(addrs, move |addr| net::TcpStream::connect(&addr))
+            }),
+        )
+    }
 }
 
-/// Bind to the endpoint using the default resolver.
-pub fn tcp_bind<'a, T>(ep: T, remote: Remote) -> IoFuture<TcpListener>
-where
-    T: ToEndpoint<'a>,
-{
-    tcp_bind_with(ep, remote, POOL.clone())
+/// Shim for tokio::net::TcpListener
+pub struct TcpListener;
+
+impl TcpListener {
+    /// Bind to the endpoint using the default resolver.
+    pub fn bind<'a, T>(ep: T) -> IoFuture<net::TcpListener>
+    where
+        T: ToEndpoint<'a>,
+    {
+        TcpListener::bind_with(ep, POOL.clone())
+    }
+
+    /// Bind to the endpoint using a custom resolver.
+    pub fn bind_with<'a, T, R>(ep: T, resolver: R) -> IoFuture<net::TcpListener>
+    where
+        T: ToEndpoint<'a>,
+        R: Resolver,
+    {
+        boxed(
+            resolve_endpoint(ep, resolver).and_then(move |addrs| {
+                try_until_ok(addrs, move |addr| net::TcpListener::bind(&addr))
+            }),
+        )
+    }
 }
 
-/// Bind to the endpoint using a custom resolver.
-pub fn tcp_bind_with<'a, T, R>(ep: T, remote: Remote, resolver: R) -> IoFuture<TcpListener>
-where
-    T: ToEndpoint<'a>,
-    R: Resolver,
-{
-    boxed(resolve_endpoint(ep, resolver).and_then(move |addrs| {
-        try_until_ok(addrs, move |addr| {
-            with_handle(&remote, move |handle| TcpListener::bind(&addr, handle))
-        })
-    }))
-}
+/// Shim for tokio::net::UdpSocket
+pub struct UdpSocket;
 
-/// Bind to the endpoint using the default resolver.
-pub fn udp_bind<'a, T>(ep: T, remote: Remote) -> IoFuture<UdpSocket>
-where
-    T: ToEndpoint<'a>,
-{
-    udp_bind_with(ep, remote, POOL.clone())
-}
+impl UdpSocket {
+    /// Connect to the endpoint using the default resolver.
 
-/// Bind to the endpoint using a custom resolver.
-pub fn udp_bind_with<'a, T, R>(ep: T, remote: Remote, resolver: R) -> IoFuture<UdpSocket>
-where
-    T: ToEndpoint<'a>,
-    R: Resolver,
-{
-    boxed(resolve_endpoint(ep, resolver).and_then(move |addrs| {
-        try_until_ok(addrs, move |addr| {
-            with_handle(&remote, move |handle| UdpSocket::bind(&addr, handle))
-        })
-    }))
+    /// Bind to the endpoint using the default resolver.
+    pub fn bind<'a, T>(ep: T) -> IoFuture<net::UdpSocket>
+    where
+        T: ToEndpoint<'a>,
+    {
+        UdpSocket::bind_with(ep, POOL.clone())
+    }
+
+    /// Bind to the endpoint using a custom resolver.
+    pub fn bind_with<'a, T, R>(ep: T, resolver: R) -> IoFuture<net::UdpSocket>
+    where
+        T: ToEndpoint<'a>,
+        R: Resolver,
+    {
+        boxed(
+            resolve_endpoint(ep, resolver).and_then(move |addrs| {
+                try_until_ok(addrs, move |addr| net::UdpSocket::bind(&addr))
+            }),
+        )
+    }
 }
 
 /// Resolves endpoint into a vector of socket addresses.
@@ -129,19 +152,4 @@ where
             })
             .and_then(|r| r),
     )
-}
-
-/// Invokes functor with event loop handle obtained from a remote.
-fn with_handle<F, R, I>(remote: &Remote, f: F) -> IoFuture<I>
-where
-    F: FnOnce(&Handle) -> R + Send + 'static,
-    R: IntoFuture<Item = I, Error = io::Error> + Send + 'static,
-    R::Future: Send + 'static,
-{
-    let (tx, rx) = futures::oneshot();
-    remote.spawn(move |handle| {
-        let _ = tx.send(f(handle));
-        Ok(())
-    });
-    boxed(rx.then(|r| r.expect("canceled")))
 }
