@@ -77,8 +77,6 @@ impl TcpListener {
 pub struct UdpSocket;
 
 impl UdpSocket {
-    /// Connect to the endpoint using the default resolver.
-
     /// Bind to the endpoint using the default resolver.
     pub fn bind<'a, T>(ep: T) -> IoFuture<net::UdpSocket>
     where
