@@ -134,7 +134,7 @@ where
     ));
     boxed(
         futures::stream::iter_ok(addrs.into_iter())
-            .fold(result, move |prev, addr| {
+            .fold::<_, _, Box<Future<Item = _, Error = io::Error> + Send>>(result, move |prev, addr| {
                 match prev {
                     Ok(i) => {
                         // Keep first successful result.
