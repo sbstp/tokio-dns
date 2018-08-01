@@ -44,5 +44,5 @@ where
 }
 
 pub use endpoint::{Endpoint, ToEndpoint};
-pub use net::{resolve, TcpListener, TcpStream, UdpSocket};
+pub use net::{resolve, resolve_hostname, TcpListener, TcpStream, UdpSocket};
 pub use resolver::{CpuPoolResolver, Resolver};

@@ -14,11 +14,16 @@ lazy_static! {
 }
 
 /// Resolve a host using the default resolver.
-pub fn resolve<'a, T>(host: &str) -> IoFuture<Vec<IpAddr>>
-where
-    T: ToEndpoint<'a>,
+pub fn resolve(host: &str) -> IoFuture<Vec<IpAddr>>
 {
     POOL.resolve(host)
+}
+
+/// Resolves hostname (host:port) using the default resolver
+/// into a vector of socket addresses.
+pub fn resolve_hostname(host: &str) -> IoFuture<Vec<SocketAddr>>
+{
+    resolve_endpoint(host, POOL.clone())
 }
 
 /// Shim for tokio::net::TcpStream
