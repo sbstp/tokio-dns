@@ -1,5 +1,5 @@
 use std::io;
-use std::net::{IpAddr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 use std::str::FromStr;
 
 /// An Endpoint is a way of identifying the target of a connection.
@@ -20,10 +20,12 @@ pub enum Endpoint<'a> {
 ///
 /// This trait is implemented for the following types:
 ///
-/// * `SocketAddr`, `&SocketAddr` - a socket address.
-/// * `(IpAddr, u16)`, `(&str, u16)` - a target and a port.
-/// * `&str` - a string formatted as `<target>:<port>` where
-/// `<target>` is a host name or an IP address.
+/// * `SocketAddr`, `SocketAddrV4`, `SocketAddrV6` - a socket address.
+/// * `(IpAddr, u16)`, `(Ipv4Addr, u16)`, `(Ipv6Addr, u16)` - an IP address and a port
+/// * `(&str, u16)` - a `<target>` and a port.
+/// * `&str` - a string formatted as `<target>:port`.
+///
+/// Where `<target>` is a host name or an IP address.
 ///
 /// This trait is similar to the `ToSocketAddrs` trait, except
 /// that it does not perform host name resolution.
@@ -44,9 +46,51 @@ impl<'a, 'b> ToEndpoint<'a> for &'b SocketAddr {
     }
 }
 
-impl <'a> ToEndpoint<'a> for (IpAddr, u16) {
+impl<'a> ToEndpoint<'a> for SocketAddrV4 {
+    fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
+        Ok(Endpoint::SocketAddr(SocketAddr::V4(self)))
+    }
+}
+
+impl<'a, 'b> ToEndpoint<'a> for &'b SocketAddrV4 {
+    fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
+        Ok(Endpoint::SocketAddr(SocketAddr::V4(*self)))
+    }
+}
+
+impl<'a> ToEndpoint<'a> for SocketAddrV6 {
+    fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
+        Ok(Endpoint::SocketAddr(SocketAddr::V6(self)))
+    }
+}
+
+impl<'a, 'b> ToEndpoint<'a> for &'b SocketAddrV6 {
+    fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
+        Ok(Endpoint::SocketAddr(SocketAddr::V6(*self)))
+    }
+}
+
+impl<'a> ToEndpoint<'a> for (IpAddr, u16) {
     fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
         Ok(Endpoint::SocketAddr(SocketAddr::new(self.0, self.1)))
+    }
+}
+
+impl<'a> ToEndpoint<'a> for (Ipv4Addr, u16) {
+    fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
+        Ok(Endpoint::SocketAddr(SocketAddr::new(
+            IpAddr::V4(self.0),
+            self.1,
+        )))
+    }
+}
+
+impl<'a> ToEndpoint<'a> for (Ipv6Addr, u16) {
+    fn to_endpoint(self) -> io::Result<Endpoint<'a>> {
+        Ok(Endpoint::SocketAddr(SocketAddr::new(
+            IpAddr::V6(self.0),
+            self.1,
+        )))
     }
 }
 
@@ -73,20 +117,18 @@ impl<'a> ToEndpoint<'a> for &'a str {
         match self.rfind(":") {
             Some(idx) => {
                 let host = &self[..idx];
-                let port = try!(parse_port(&self[idx+1..]));
+                let port = try!(parse_port(&self[idx + 1..]));
                 Ok(Endpoint::Host(host, port))
             }
-            None => {
-                Err(io::Error::new(io::ErrorKind::Other, "invalid endpoint"))
-            }
+            None => Err(io::Error::new(io::ErrorKind::Other, "invalid endpoint")),
         }
     }
 }
 
 #[test]
 fn test_resolve_localhost() {
-    use futures::Future;
     use super::{CpuPoolResolver, Resolver};
+    use futures::Future;
 
     let resolver = CpuPoolResolver::new(1);
 
@@ -142,7 +184,6 @@ fn test_endpoint_str_ipv4() {
         _ => panic!(),
     }
 }
-
 
 #[test]
 fn test_endpoint_str_ipv6() {

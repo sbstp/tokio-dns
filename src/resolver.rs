@@ -9,7 +9,7 @@ use {boxed, IoFuture};
 /// resolving host names into IP addresses.
 pub trait Resolver {
     /// Given a host name, this function returns a Future which
-    /// will eventually resolve into a list of IP addresses.
+    /// will eventually produce a list of IP addresses.
     fn resolve(&self, host: &str) -> IoFuture<Vec<IpAddr>>;
 }
 

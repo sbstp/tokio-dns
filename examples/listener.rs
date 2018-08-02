@@ -2,8 +2,8 @@ extern crate futures;
 extern crate tokio;
 extern crate tokio_dns;
 
-use futures::Future;
 use futures::stream::Stream;
+use futures::Future;
 use tokio_dns::TcpListener;
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
                 Ok(())
             })
         })
-        .then(|_| Ok(()));
+        .map_err(|err| println!("Error binding socket {:?}", err));
 
     tokio::run(server);
 }

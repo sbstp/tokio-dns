@@ -44,5 +44,9 @@ where
 }
 
 pub use endpoint::{Endpoint, ToEndpoint};
-pub use net::{resolve, resolve_hostname, TcpListener, TcpStream, UdpSocket};
+#[allow(deprecated)]
+pub use net::{
+    resolve, resolve_ip_addr, resolve_ip_addr_with, resolve_sock_addr, resolve_sock_addr_with,
+    TcpListener, TcpStream, UdpSocket,
+};
 pub use resolver::{CpuPoolResolver, Resolver};

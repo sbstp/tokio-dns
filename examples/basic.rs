@@ -8,11 +8,8 @@ use tokio_dns::TcpStream;
 fn main() {
     // connect using the built-in resolver.
     let connector = TcpStream::connect("rust-lang.org:80")
-        .and_then(|sock| {
-            println!("Connected to {}", sock.peer_addr().unwrap());
-            Ok(())
-        })
-        .then(|_| Ok(()));
+        .map(|sock| println!("Connected to {}", sock.peer_addr().unwrap()))
+        .map_err(|err| println!("Error connecting {:?}", err));
 
     tokio::run(connector);
 }

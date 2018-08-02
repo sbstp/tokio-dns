@@ -13,17 +13,66 @@ lazy_static! {
     static ref POOL: CpuPoolResolver = CpuPoolResolver::new(5);
 }
 
-/// Resolve a host using the default resolver.
-pub fn resolve(host: &str) -> IoFuture<Vec<IpAddr>>
-{
+/// Resolve a hostname to a sequence of ip addresses using the default resolver.
+#[deprecated(since = "0.4.0", note = "used `resolve_ip` instead")]
+pub fn resolve(host: &str) -> IoFuture<Vec<IpAddr>> {
+    resolve_ip_addr(host)
+}
+
+/// Resolve a hostname to a sequence of ip addresses using the default resolver.
+///
+/// # Example
+/// ```
+/// tokio_dns::resolve_ip_addr("rust-lang.org");
+/// ```
+pub fn resolve_ip_addr(host: &str) -> IoFuture<Vec<IpAddr>> {
     POOL.resolve(host)
 }
 
-/// Resolves hostname (host:port) using the default resolver
-/// into a vector of socket addresses.
-pub fn resolve_hostname(host: &str) -> IoFuture<Vec<SocketAddr>>
+/// Resolve a hostname to a sequence of ip addresses using a custom resolver.
+///
+/// # Example
+/// ```
+/// # use tokio_dns::CpuPoolResolver;
+/// let resolver = CpuPoolResolver::new(10);
+///
+/// tokio_dns::resolve_ip_addr_with("rust-lang.org", resolver.clone());
+/// ```
+pub fn resolve_ip_addr_with<R>(host: &str, resolver: R) -> IoFuture<Vec<IpAddr>>
+where
+    R: Resolver,
 {
-    resolve_endpoint(host, POOL.clone())
+    resolver.resolve(host)
+}
+
+/// Resolve an endpoint to a sequence of socket addresses using the default resolver.
+///
+/// # Example
+/// ```
+/// tokio_dns::resolve_sock_addr(("rust-lang.org", 80));
+/// ```
+pub fn resolve_sock_addr<'a, T>(endpoint: T) -> IoFuture<Vec<SocketAddr>>
+where
+    T: ToEndpoint<'a>,
+{
+    resolve_endpoint(endpoint, POOL.clone())
+}
+
+/// Resolve an endpoint to a sequence of socket addresses using a custom resolver.
+///
+/// # Example
+/// ```
+/// # use tokio_dns::CpuPoolResolver;
+/// let resolver = CpuPoolResolver::new(10);
+///
+/// tokio_dns::resolve_sock_addr_with(("rust-lang.org", 80), resolver.clone());
+/// ```
+pub fn resolve_sock_addr_with<'a, T, R>(endpoint: T, resolver: R) -> IoFuture<Vec<SocketAddr>>
+where
+    T: ToEndpoint<'a>,
+    R: Resolver,
+{
+    resolve_endpoint(endpoint, resolver)
 }
 
 /// Shim for tokio::net::TcpStream
@@ -139,20 +188,23 @@ where
     ));
     boxed(
         futures::stream::iter_ok(addrs.into_iter())
-            .fold::<_, _, Box<Future<Item = _, Error = io::Error> + Send>>(result, move |prev, addr| {
-                match prev {
-                    Ok(i) => {
-                        // Keep first successful result.
-                        boxed(futures::finished(Ok(i)))
+            .fold::<_, _, Box<Future<Item = _, Error = io::Error> + Send>>(
+                result,
+                move |prev, addr| {
+                    match prev {
+                        Ok(i) => {
+                            // Keep first successful result.
+                            boxed(futures::finished(Ok(i)))
+                        }
+                        Err(..) => {
+                            // Ignore previous error and try next address.
+                            let future = f(addr).into_future();
+                            // Lift future error into item to avoid short-circuit exit from fold.
+                            boxed(future.then(Ok))
+                        }
                     }
-                    Err(..) => {
-                        // Ignore previous error and try next address.
-                        let future = f(addr).into_future();
-                        // Lift future error into item to avoid short-circuit exit from fold.
-                        boxed(future.then(Ok))
-                    }
-                }
-            })
+                },
+            )
             .and_then(|r| r),
     )
 }
