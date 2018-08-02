@@ -9,6 +9,15 @@ This library [has been packaged to crates.io](https://crates.io/crates/tokio-dns
 
 ## Changelog
 
+### 0.4.0
+* Added a ton of combinations of `IpAdrr`, `SocketAddr`, and `port` to the `ToEndpoint` trait.
+* Added new free functions to resolve a host/endpoint to a sequence of ip addresses or socket addresses, thanks @Fedcomp .
+* Small docs changes and new examples.
+
+
+### 0.3.1
+* Fix a `rustc` regression, thanks @mehcode .
+
 ### 0.3.0
 * Update to the new `tokio` crate.
 * Change the API to look more like `tokio`'s API.
