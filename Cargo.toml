@@ -1,6 +1,6 @@
 [package]
 name = "tokio-dns-unofficial"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["Simon Bernier St-Pierre <sbernierstpierre@gmail.com>"]
 description = "Unofficial extension to tokio to provide asynchronous DNS resolution"
 documentation = "https://docs.rs/tokio-dns-unofficial"
