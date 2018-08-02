@@ -14,7 +14,7 @@ lazy_static! {
 }
 
 /// Resolve a hostname to a sequence of ip addresses using the default resolver.
-#[deprecated(since = "0.4.0", note = "used `resolve_ip` instead")]
+#[deprecated(since = "0.4.0", note = "used `resolve_ip_addr` instead")]
 pub fn resolve(host: &str) -> IoFuture<Vec<IpAddr>> {
     resolve_ip_addr(host)
 }
