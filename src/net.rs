@@ -5,9 +5,9 @@ use futures::stream::Stream;
 use futures::{self, Future, IntoFuture};
 use tokio::net;
 
-use endpoint::{Endpoint, ToEndpoint};
-use resolver::{CpuPoolResolver, Resolver};
-use {boxed, IoFuture};
+use crate::endpoint::{Endpoint, ToEndpoint};
+use crate::resolver::{CpuPoolResolver, Resolver};
+use crate::{boxed, IoFuture};
 
 lazy_static! {
     static ref POOL: CpuPoolResolver = CpuPoolResolver::new(5);
@@ -188,7 +188,7 @@ where
     ));
     boxed(
         futures::stream::iter_ok(addrs.into_iter())
-            .fold::<_, _, Box<Future<Item = _, Error = io::Error> + Send>>(
+            .fold::<_, _, Box<dyn Future<Item = _, Error = io::Error> + Send>>(
                 result,
                 move |prev, addr| {
                     match prev {

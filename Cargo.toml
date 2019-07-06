@@ -10,6 +10,7 @@ readme = "README.md"
 keywords = ["tokio", "async", "dns"]
 license = "Apache-2.0/MIT"
 exclude = [".travis.yml"]
+edition = "2018"
 
 [lib]
 name = "tokio_dns"

@@ -3,7 +3,7 @@ use std::str;
 
 use futures_cpupool::CpuPool;
 
-use {boxed, IoFuture};
+use crate::{boxed, IoFuture};
 
 /// The Resolver trait represents an object capable of
 /// resolving host names into IP addresses.
