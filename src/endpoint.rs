@@ -117,7 +117,7 @@ impl<'a> ToEndpoint<'a> for &'a str {
         match self.rfind(":") {
             Some(idx) => {
                 let host = &self[..idx];
-                let port = try!(parse_port(&self[idx + 1..]));
+                let port = parse_port(&self[idx + 1..])?;
                 Ok(Endpoint::Host(host, port))
             }
             None => Err(io::Error::new(io::ErrorKind::Other, "invalid endpoint")),
