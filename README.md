@@ -1,5 +1,5 @@
 # tokio-dns
-Asynchronous name resolution utilities for the `futures` and `tokio-core` crates. Look at the crate-level documentation for more details.
+Asynchronous name resolution utilities for the `futures` and `tokio` crates. Look at the crate-level documentation for more details.
 
 [![BuildStatus](https://api.travis-ci.org/sbstp/tokio-dns.svg?branch=master)](https://travis-ci.org/sbstp/tokio-dns)
 

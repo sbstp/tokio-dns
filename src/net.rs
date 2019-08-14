@@ -1,7 +1,7 @@
 use std::io;
 use std::net::{IpAddr, SocketAddr};
 
-use futures::{compat::*, prelude::*};
+use futures::prelude::*;
 use tokio::net;
 
 use crate::endpoint::{Endpoint, ToEndpoint};
@@ -89,7 +89,7 @@ impl TcpStream {
         R: Resolver,
     {
         try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            net::TcpStream::connect(&addr).compat().boxed()
+            net::TcpStream::connect(&addr)
         })
         .await
     }

@@ -44,17 +44,21 @@ impl Resolver for CpuPoolResolver {
 
             pool.spawn_obj_ok(
                 async move {
-                    tx.send(match host[..].to_socket_addrs() {
+                    let _ = tx.send(match host[..].to_socket_addrs() {
                         Ok(it) => Ok(it.map(|s| s.ip()).collect()),
                         Err(e) => Err(e),
-                    })
-                    .unwrap()
+                    });
                 }
                     .boxed()
                     .into(),
             );
 
-            rx.await.unwrap()
+            rx.await.unwrap_or_else(|_| {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::Interrupted,
+                    "Resolver future has been dropped",
+                ))
+            })
         }
             .boxed()
     }
