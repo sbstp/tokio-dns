@@ -11,10 +11,6 @@
 //! provides one (for now) implementation of a resolver, the `CpuPoolResolver`.
 //! It uses a thread pool and the `ToSocketAddrs` trait to perform name resolution.
 //!
-//! The crate level functions `tcp_connect`, `tcp_listen` and `udp_bind` support
-//! name resolution via a lazy static `CpuPoolResolver` using 5 threads. Their
-//!`*_with` counterpart take a resolver as an argument.
-//!
 //! [Git Repository](https://github.com/sbstp/tokio-dns)
 #![warn(missing_docs)]
 
