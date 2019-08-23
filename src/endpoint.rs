@@ -128,11 +128,12 @@ impl<'a> ToEndpoint<'a> for &'a str {
 #[test]
 fn test_resolve_localhost() {
     use super::{CpuPoolResolver, Resolver};
-    use futures::Future;
 
     let resolver = CpuPoolResolver::new(1);
 
-    let fut = resolver.resolve("localhost").and_then(|addrs| {
+    let fut = async move {
+        let addrs = resolver.resolve("localhost").await.unwrap();
+
         for addr in addrs {
             // TODO 1.12 addr.is_loopback()
             assert!(match addr {
@@ -140,10 +141,9 @@ fn test_resolve_localhost() {
                 IpAddr::V6(a) => a.is_loopback(),
             });
         }
-        Ok(())
-    });
+    };
 
-    let _ = fut.wait();
+    let _ = futures::executor::block_on(fut);
 }
 
 #[test]

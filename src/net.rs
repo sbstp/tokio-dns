@@ -1,22 +1,14 @@
 use std::io;
 use std::net::{IpAddr, SocketAddr};
 
-use futures::stream::Stream;
-use futures::{self, Future, IntoFuture};
+use futures::prelude::*;
 use tokio::net;
 
 use crate::endpoint::{Endpoint, ToEndpoint};
 use crate::resolver::{CpuPoolResolver, Resolver};
-use crate::{boxed, IoFuture};
 
-lazy_static! {
+lazy_static::lazy_static! {
     static ref POOL: CpuPoolResolver = CpuPoolResolver::new(5);
-}
-
-/// Resolve a hostname to a sequence of ip addresses using the default resolver.
-#[deprecated(since = "0.4.0", note = "used `resolve_ip_addr` instead")]
-pub fn resolve(host: &str) -> IoFuture<Vec<IpAddr>> {
-    resolve_ip_addr(host)
 }
 
 /// Resolve a hostname to a sequence of ip addresses using the default resolver.
@@ -25,8 +17,8 @@ pub fn resolve(host: &str) -> IoFuture<Vec<IpAddr>> {
 /// ```
 /// tokio_dns::resolve_ip_addr("rust-lang.org");
 /// ```
-pub fn resolve_ip_addr(host: &str) -> IoFuture<Vec<IpAddr>> {
-    POOL.resolve(host)
+pub async fn resolve_ip_addr(host: &str) -> io::Result<Vec<IpAddr>> {
+    POOL.resolve(host).await
 }
 
 /// Resolve a hostname to a sequence of ip addresses using a custom resolver.
@@ -38,11 +30,11 @@ pub fn resolve_ip_addr(host: &str) -> IoFuture<Vec<IpAddr>> {
 ///
 /// tokio_dns::resolve_ip_addr_with("rust-lang.org", resolver.clone());
 /// ```
-pub fn resolve_ip_addr_with<R>(host: &str, resolver: R) -> IoFuture<Vec<IpAddr>>
+pub async fn resolve_ip_addr_with<R>(host: &str, resolver: R) -> io::Result<Vec<IpAddr>>
 where
     R: Resolver,
 {
-    resolver.resolve(host)
+    resolver.resolve(host).await
 }
 
 /// Resolve an endpoint to a sequence of socket addresses using the default resolver.
@@ -51,11 +43,11 @@ where
 /// ```
 /// tokio_dns::resolve_sock_addr(("rust-lang.org", 80));
 /// ```
-pub fn resolve_sock_addr<'a, T>(endpoint: T) -> IoFuture<Vec<SocketAddr>>
+pub async fn resolve_sock_addr<'a, T>(endpoint: T) -> io::Result<Vec<SocketAddr>>
 where
     T: ToEndpoint<'a>,
 {
-    resolve_endpoint(endpoint, POOL.clone())
+    resolve_endpoint(endpoint, POOL.clone()).await
 }
 
 /// Resolve an endpoint to a sequence of socket addresses using a custom resolver.
@@ -67,12 +59,15 @@ where
 ///
 /// tokio_dns::resolve_sock_addr_with(("rust-lang.org", 80), resolver.clone());
 /// ```
-pub fn resolve_sock_addr_with<'a, T, R>(endpoint: T, resolver: R) -> IoFuture<Vec<SocketAddr>>
+pub async fn resolve_sock_addr_with<'a, T, R>(
+    endpoint: T,
+    resolver: R,
+) -> io::Result<Vec<SocketAddr>>
 where
     T: ToEndpoint<'a>,
     R: Resolver,
 {
-    resolve_endpoint(endpoint, resolver)
+    resolve_endpoint(endpoint, resolver).await
 }
 
 /// Shim for tokio::net::TcpStream
@@ -80,24 +75,23 @@ pub struct TcpStream;
 
 impl TcpStream {
     /// Connect to the endpoint using the default resolver.
-    pub fn connect<'a, T>(ep: T) -> IoFuture<net::TcpStream>
+    pub async fn connect<'a, T>(ep: T) -> io::Result<net::TcpStream>
     where
         T: ToEndpoint<'a>,
     {
-        TcpStream::connect_with(ep, POOL.clone())
+        TcpStream::connect_with(ep, POOL.clone()).await
     }
 
     /// Connect to the endpoint using a custom resolver.
-    pub fn connect_with<'a, T, R>(ep: T, resolver: R) -> IoFuture<net::TcpStream>
+    pub async fn connect_with<'a, T, R>(ep: T, resolver: R) -> io::Result<net::TcpStream>
     where
         T: ToEndpoint<'a>,
         R: Resolver,
     {
-        boxed(
-            resolve_endpoint(ep, resolver).and_then(move |addrs| {
-                try_until_ok(addrs, move |addr| net::TcpStream::connect(&addr))
-            }),
-        )
+        try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
+            net::TcpStream::connect(&addr)
+        })
+        .await
     }
 }
 
@@ -106,24 +100,23 @@ pub struct TcpListener;
 
 impl TcpListener {
     /// Bind to the endpoint using the default resolver.
-    pub fn bind<'a, T>(ep: T) -> IoFuture<net::TcpListener>
+    pub async fn bind<'a, T>(ep: T) -> io::Result<net::TcpListener>
     where
         T: ToEndpoint<'a>,
     {
-        TcpListener::bind_with(ep, POOL.clone())
+        TcpListener::bind_with(ep, POOL.clone()).await
     }
 
     /// Bind to the endpoint using a custom resolver.
-    pub fn bind_with<'a, T, R>(ep: T, resolver: R) -> IoFuture<net::TcpListener>
+    pub async fn bind_with<'a, T, R>(ep: T, resolver: R) -> io::Result<net::TcpListener>
     where
         T: ToEndpoint<'a>,
         R: Resolver,
     {
-        boxed(
-            resolve_endpoint(ep, resolver).and_then(move |addrs| {
-                try_until_ok(addrs, move |addr| net::TcpListener::bind(&addr))
-            }),
-        )
+        try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
+            future::ready(net::TcpListener::bind(&addr))
+        })
+        .await
     }
 }
 
@@ -132,79 +125,63 @@ pub struct UdpSocket;
 
 impl UdpSocket {
     /// Bind to the endpoint using the default resolver.
-    pub fn bind<'a, T>(ep: T) -> IoFuture<net::UdpSocket>
+    pub async fn bind<'a, T>(ep: T) -> io::Result<net::UdpSocket>
     where
         T: ToEndpoint<'a>,
     {
-        UdpSocket::bind_with(ep, POOL.clone())
+        UdpSocket::bind_with(ep, POOL.clone()).await
     }
 
     /// Bind to the endpoint using a custom resolver.
-    pub fn bind_with<'a, T, R>(ep: T, resolver: R) -> IoFuture<net::UdpSocket>
+    pub async fn bind_with<'a, T, R>(ep: T, resolver: R) -> io::Result<net::UdpSocket>
     where
         T: ToEndpoint<'a>,
         R: Resolver,
     {
-        boxed(
-            resolve_endpoint(ep, resolver).and_then(move |addrs| {
-                try_until_ok(addrs, move |addr| net::UdpSocket::bind(&addr))
-            }),
-        )
+        try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
+            future::ready(net::UdpSocket::bind(&addr))
+        })
+        .await
     }
 }
 
 /// Resolves endpoint into a vector of socket addresses.
-fn resolve_endpoint<'a, T, R>(ep: T, resolver: R) -> IoFuture<Vec<SocketAddr>>
+async fn resolve_endpoint<'a, T, R>(ep: T, resolver: R) -> io::Result<Vec<SocketAddr>>
 where
     R: Resolver,
     T: ToEndpoint<'a>,
 {
     let ep = match ep.to_endpoint() {
         Ok(ep) => ep,
-        Err(e) => return boxed(futures::failed(e)),
+        Err(e) => return Err(e),
     };
-    match ep {
-        Endpoint::Host(host, port) => boxed(resolver.resolve(host).map(move |addrs| {
-            addrs
+    Ok({
+        match ep {
+            Endpoint::Host(host, port) => resolver
+                .resolve(host)
+                .await?
                 .into_iter()
                 .map(|addr| SocketAddr::new(addr, port))
-                .collect()
-        })),
-        Endpoint::SocketAddr(addr) => boxed(futures::finished(vec![addr])),
-    }
+                .collect(),
+            Endpoint::SocketAddr(addr) => vec![addr],
+        }
+    })
 }
 
-fn try_until_ok<F, R, I>(addrs: Vec<SocketAddr>, f: F) -> IoFuture<I>
+async fn try_until_ok<F, R, I>(addrs: Vec<SocketAddr>, f: F) -> io::Result<I>
 where
     F: Fn(SocketAddr) -> R + Send + 'static,
-    R: IntoFuture<Item = I, Error = io::Error> + 'static,
-    R::Future: Send + 'static,
-    <R::Future as Future>::Error: From<io::Error>,
+    R: Future<Output = io::Result<I>> + Send + 'static,
     I: Send + 'static,
 {
-    let result = Err(io::Error::new(
+    for addr in addrs {
+        if let Ok(i) = f(addr).await {
+            return Ok(i);
+        }
+    }
+
+    Err(io::Error::new(
         io::ErrorKind::Other,
         "could not resolve to any address",
-    ));
-    boxed(
-        futures::stream::iter_ok(addrs.into_iter())
-            .fold::<_, _, Box<dyn Future<Item = _, Error = io::Error> + Send>>(
-                result,
-                move |prev, addr| {
-                    match prev {
-                        Ok(i) => {
-                            // Keep first successful result.
-                            boxed(futures::finished(Ok(i)))
-                        }
-                        Err(..) => {
-                            // Ignore previous error and try next address.
-                            let future = f(addr).into_future();
-                            // Lift future error into item to avoid short-circuit exit from fold.
-                            boxed(future.then(Ok))
-                        }
-                    }
-                },
-            )
-            .and_then(|r| r),
-    )
+    ))
 }

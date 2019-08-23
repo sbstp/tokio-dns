@@ -14,35 +14,18 @@
 //! [Git Repository](https://github.com/sbstp/tokio-dns)
 #![warn(missing_docs)]
 
-extern crate futures;
-extern crate futures_cpupool;
-extern crate tokio;
-
-#[macro_use]
-extern crate lazy_static;
-
 mod endpoint;
 mod net;
 mod resolver;
 
-use std::io;
+use std::{io, pin::Pin};
 
-use futures::future::Future;
-
-/// An alias for the futures produced by this library.
-pub type IoFuture<T> = Box<dyn Future<Item = T, Error = io::Error> + Send>;
-
-fn boxed<F>(fut: F) -> Box<dyn Future<Item = F::Item, Error = F::Error> + Send>
-where
-    F: Future + Send + 'static,
-{
-    Box::new(fut)
-}
+use futures::prelude::*;
 
 pub use crate::endpoint::{Endpoint, ToEndpoint};
 #[allow(deprecated)]
 pub use crate::net::{
-    resolve, resolve_ip_addr, resolve_ip_addr_with, resolve_sock_addr, resolve_sock_addr_with,
-    TcpListener, TcpStream, UdpSocket,
+    resolve_ip_addr, resolve_ip_addr_with, resolve_sock_addr, resolve_sock_addr_with, TcpListener,
+    TcpStream, UdpSocket,
 };
 pub use crate::resolver::{CpuPoolResolver, Resolver};

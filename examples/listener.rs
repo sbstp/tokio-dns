@@ -1,22 +1,17 @@
-extern crate futures;
-extern crate tokio;
-extern crate tokio_dns;
-
-use futures::stream::Stream;
-use futures::Future;
+use futures::prelude::*;
 use tokio_dns::TcpListener;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     // connect using the built-in resolver.
-    let server = TcpListener::bind("localhost:3000")
-        .and_then(|listener| {
+    match TcpListener::bind("localhost:3000").await {
+        Ok(listener) => {
             println!("Ready to accept");
-            listener.incoming().for_each(|sock| {
-                println!("Accepted connection from {:?}", sock.peer_addr().unwrap());
-                Ok(())
-            })
-        })
-        .map_err(|err| println!("Error binding socket {:?}", err));
-
-    tokio::run(server);
+            let mut s = listener.incoming();
+            while let Some(sock) = s.next().await {
+                println!("Accepted connection from {:?}", sock.unwrap().peer_addr());
+            }
+        }
+        Err(err) => println!("Error binding socket {:?}", err),
+    }
 }
