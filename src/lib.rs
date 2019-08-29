@@ -18,10 +18,6 @@ mod endpoint;
 mod net;
 mod resolver;
 
-use std::{io, pin::Pin};
-
-use futures::prelude::*;
-
 pub use crate::endpoint::{Endpoint, ToEndpoint};
 #[allow(deprecated)]
 pub use crate::net::{
