@@ -114,7 +114,7 @@ impl<'a> ToEndpoint<'a> for &'a str {
             u16::from_str(port).map_err(|_| io::Error::new(io::ErrorKind::Other, "invalid port"))
         }
 
-        match self.rfind(":") {
+        match self.rfind(':') {
             Some(idx) => {
                 let host = &self[..idx];
                 let port = parse_port(&self[idx + 1..])?;
