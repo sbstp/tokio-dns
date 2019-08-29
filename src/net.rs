@@ -88,9 +88,10 @@ impl TcpStream {
         T: ToEndpoint<'a>,
         R: Resolver,
     {
-        try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            net::TcpStream::connect(&addr)
-        })
+        try_until_ok(
+            resolve_endpoint(ep, resolver).await?,
+            net::TcpStream::connect,
+        )
         .await
     }
 }
@@ -113,9 +114,10 @@ impl TcpListener {
         T: ToEndpoint<'a>,
         R: Resolver,
     {
-        try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            future::ready(net::TcpListener::bind(&addr))
-        })
+        try_until_ok(
+            resolve_endpoint(ep, resolver).await?,
+            net::TcpListener::bind,
+        )
         .await
     }
 }
@@ -138,10 +140,7 @@ impl UdpSocket {
         T: ToEndpoint<'a>,
         R: Resolver,
     {
-        try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            future::ready(net::UdpSocket::bind(&addr))
-        })
-        .await
+        try_until_ok(resolve_endpoint(ep, resolver).await?, net::UdpSocket::bind).await
     }
 }
 
