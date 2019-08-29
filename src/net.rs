@@ -89,7 +89,7 @@ impl TcpStream {
         R: Resolver,
     {
         try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            net::TcpStream::connect(&addr)
+            net::TcpStream::connect(addr)
         })
         .await
     }
@@ -114,7 +114,7 @@ impl TcpListener {
         R: Resolver,
     {
         try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            future::ready(net::TcpListener::bind(&addr))
+            net::TcpListener::bind(addr)
         })
         .await
     }
@@ -139,7 +139,7 @@ impl UdpSocket {
         R: Resolver,
     {
         try_until_ok(resolve_endpoint(ep, resolver).await?, move |addr| {
-            future::ready(net::UdpSocket::bind(&addr))
+            net::UdpSocket::bind(addr)
         })
         .await
     }
