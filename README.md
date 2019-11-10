@@ -1,3 +1,6 @@
+# Attention!
+This repository is how archived because both tokio and async-std provide their own asynchronous resolvers.
+
 # tokio-dns
 Asynchronous name resolution utilities for the `futures` and `tokio` crates. Look at the crate-level documentation for more details.
 
